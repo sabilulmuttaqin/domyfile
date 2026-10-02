@@ -8,5 +8,8 @@ export default defineConfig({
   redirects: {
     "/image/image-converter": `${SITE_ORIGIN}/image/`,
     "/pdf/images-to-pdf": `${SITE_ORIGIN}/pdf/`,
+    // The remove-background tool is deferred and has no public route; keep old
+    // links alive by redirecting the non-trailing-slash variant to /image/.
+    "/image/remove-background": `${SITE_ORIGIN}/image/`,
   },
 });

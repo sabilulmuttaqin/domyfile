@@ -5,15 +5,15 @@ import { expect, test, type Page } from "@playwright/test";
 const fixture = (relativePath: string) => join(process.cwd(), "tests", "fixtures", relativePath);
 
 const focusedRoutes = [
-  { route: "/image/jpg-to-png/", title: "JPG to PNG", input: "JPG", output: "PNG", action: "Convert to PNG", related: "/image/jpg-to-webp/" },
-  { route: "/image/jpg-to-webp/", title: "JPG to WebP", input: "JPG", output: "WebP", action: "Convert to WebP", related: "/image/jpg-to-png/" },
-  { route: "/image/png-to-jpg/", title: "PNG to JPG", input: "PNG", output: "JPG", action: "Convert to JPG", related: "/image/png-to-webp/" },
-  { route: "/image/png-to-webp/", title: "PNG to WebP", input: "PNG", output: "WebP", action: "Convert to WebP", related: "/image/png-to-jpg/" },
-  { route: "/image/webp-to-jpg/", title: "WebP to JPG", input: "WebP", output: "JPG", action: "Convert to JPG", related: "/image/webp-to-png/" },
-  { route: "/image/webp-to-png/", title: "WebP to PNG", input: "WebP", output: "PNG", action: "Convert to PNG", related: "/image/webp-to-jpg/" },
-  { route: "/pdf/jpg-to-pdf/", title: "JPG to PDF", input: "JPG", output: "PDF", action: "Convert to PDF", related: "/pdf/png-to-pdf/" },
-  { route: "/pdf/png-to-pdf/", title: "PNG to PDF", input: "PNG", output: "PDF", action: "Convert to PDF", related: "/pdf/jpg-to-pdf/" },
-  { route: "/pdf/webp-to-pdf/", title: "WebP to PDF", input: "WebP", output: "PDF", action: "Convert to PDF", related: "/pdf/jpg-to-pdf/" },
+  { route: "/image/jpg-to-png/", title: "Convert JPG to PNG - Preserve Image Dimensions | DoMyFile", input: "JPG", output: "PNG", action: "Convert to PNG", related: "/image/jpg-to-webp/", h1: "Convert JPG or JPEG to PNG" },
+  { route: "/image/jpg-to-webp/", title: "Convert JPG to WebP for Websites | DoMyFile", input: "JPG", output: "WebP", action: "Convert to WebP", related: "/image/jpg-to-png/", h1: "Convert JPG or JPEG to WebP" },
+  { route: "/image/png-to-jpg/", title: "Convert PNG to JPG with Background Control | DoMyFile", input: "PNG", output: "JPG", action: "Convert to JPG", related: "/image/png-to-webp/", h1: "Convert PNG images to JPG" },
+  { route: "/image/png-to-webp/", title: "Convert PNG to WebP with Quality Control | DoMyFile", input: "PNG", output: "WebP", action: "Convert to WebP", related: "/image/png-to-jpg/", h1: "Convert PNG images to WebP" },
+  { route: "/image/webp-to-jpg/", title: "Convert WebP to JPG with Background Control | DoMyFile", input: "WebP", output: "JPG", action: "Convert to JPG", related: "/image/webp-to-png/", h1: "Convert WebP images to JPG" },
+  { route: "/image/webp-to-png/", title: "Convert WebP to PNG without Resizing | DoMyFile", input: "WebP", output: "PNG", action: "Convert to PNG", related: "/image/webp-to-jpg/", h1: "Convert WebP images to PNG" },
+  { route: "/pdf/jpg-to-pdf/", title: "Convert JPG Images to PDF | DoMyFile", input: "JPG", output: "PDF", action: "Convert to PDF", related: "/pdf/png-to-pdf/", h1: "Convert JPG or JPEG images to PDF" },
+  { route: "/pdf/png-to-pdf/", title: "Convert PNG Images to PDF | DoMyFile", input: "PNG", output: "PDF", action: "Convert to PDF", related: "/pdf/jpg-to-pdf/", h1: "Convert PNG images to PDF" },
+  { route: "/pdf/webp-to-pdf/", title: "Convert WebP Images to PDF | DoMyFile", input: "WebP", output: "PDF", action: "Convert to PDF", related: "/pdf/jpg-to-pdf/", h1: "Convert WebP images to PDF" },
 ] as const;
 
 const readSignature = (bytes: Buffer) => {
@@ -37,8 +37,8 @@ const downloadResult = async (page: Page) => {
 test("focused conversion routes expose unique intent metadata and fixed outputs", async ({ page }) => {
   for (const tool of focusedRoutes) {
     await page.goto(tool.route);
-    await expect(page).toHaveTitle(`${tool.title} — DoMyFile`);
-    await expect(page.locator(".workspace-heading h1")).toHaveText(tool.title);
+    await expect(page).toHaveTitle(tool.title);
+    await expect(page.locator(".workspace-heading h1")).toContainText(tool.h1);
     const metaDescription = await page.locator("meta[name='description']").getAttribute("content");
     expect(metaDescription).toContain(tool.input);
     expect(metaDescription).toContain(tool.output);

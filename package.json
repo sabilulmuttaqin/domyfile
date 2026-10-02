@@ -15,7 +15,7 @@
     "verify:phase2b": "node scripts/verify-phase2b.mjs",
     "verify:phase3": "node scripts/verify-phase3.mjs",
     "verify:phase6": "node scripts/verify-phase6.mjs",
-    "test": "vitest run --passWithNoTests --exclude tests/e2e/** --exclude .build/**",
+    "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test"
   },
   "dependencies": {

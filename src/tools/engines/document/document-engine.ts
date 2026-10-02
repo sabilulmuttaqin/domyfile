@@ -753,9 +753,9 @@ const compressDocxOutput = async (file: File, preset: DocumentCompressionPreset,
   const quality = preset === "light" ? 0.9 : preset === "strong" ? 0.62 : 0.78;
   for (const { name, entry } of await getImageEntries(zip)) {
     throwIfAborted(signal);
-    const extension = getExtension(name);
-    if (!/[jt]pe?g/i.test(extension)) continue;
     const bytes = await entry.async("uint8array");
+    const mediaMime = getMediaMime(bytes, getExtension(name));
+    if (mediaMime !== "image/jpeg") continue;
     const compressed = await compressJpeg(bytes, quality, signal);
     if (compressed && compressed.byteLength < bytes.byteLength * 0.98) zip.file(name, compressed);
   }
@@ -763,6 +763,8 @@ const compressDocxOutput = async (file: File, preset: DocumentCompressionPreset,
   if (blob.size >= file.size * 0.995) throw new DocumentProcessingError("NO_USEFUL_REDUCTION", "No useful reduction found. The document may already be compressed or may not contain recompressible JPEG media.");
   return blob;
 };
+
+const mimeExtension = (mime: string) => ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" }[mime] ?? "bin");
 
 const extractImages = async (file: File, signal?: AbortSignal) => {
   const zip = await ensureDocxArchive(file);
@@ -779,7 +781,8 @@ const extractImages = async (file: File, signal?: AbortSignal) => {
     if (fingerprints.has(fingerprint)) continue;
     fingerprints.add(fingerprint);
     const mime = getMediaMime(bytes, extension) ?? "application/octet-stream";
-    const output = new File([bytesToArrayBuffer(bytes)], getDocumentOutputName(file.name, "extract-images-from-docx", outputItems.length, extension), { type: mime });
+    const outputExtension = getMediaMime(bytes, extension) ? mimeExtension(mime) : extension;
+    const output = new File([bytesToArrayBuffer(bytes)], getDocumentOutputName(file.name, "extract-images-from-docx", outputItems.length, outputExtension), { type: mime });
     outputItems.push({ input: file, output, format: "image", inputBytes: file.size, outputBytes: output.size });
     archive.file(`images/${output.name}`, bytes);
   }

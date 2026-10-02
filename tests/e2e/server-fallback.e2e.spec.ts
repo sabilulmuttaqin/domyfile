@@ -97,7 +97,7 @@ test("Compress PDF completes through the temporary server boundary and reports r
   await page.locator("[data-process-button]").click();
 
   await expect(page.locator("[data-result-card]")).toBeVisible();
-  await expect(page.locator("[data-result-summary]")).toContainText("24% smaller");
+  await expect(page.locator("[data-result-summary]")).toContainText("24% size change");
   await expect(page.locator("[data-result-list]")).toContainText("8 pages");
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -126,7 +126,7 @@ test("Compress Video completes through the temporary server boundary and preserv
   await page.locator("[data-process-button]").click();
 
   await expect(page.locator("[data-result-card]")).toBeVisible();
-  await expect(page.locator("[data-result-summary]")).toContainText("27% smaller");
+  await expect(page.locator("[data-result-summary]")).toContainText("27% size change");
   await expect(page.locator("[data-result-list]")).toContainText("160 × 90 px");
   await expect(page.locator("[data-result-list]")).toContainText("1.03 s");
   const [download] = await Promise.all([

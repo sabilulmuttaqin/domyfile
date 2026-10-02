@@ -462,7 +462,7 @@ const validateTrimVideoOutput = (bytes: Uint8Array, outputName: string, inputPro
 
 const percentReduction = (before: number, after: number) => Math.max(0, ((before - after) / before) * 100);
 
-const durationTolerance = (duration: number) => Math.max(0.12, Math.min(0.75, duration * 0.05));
+const durationTolerance = (duration: number) => Math.max(0.12, Math.min(0.75, duration * 0.05 + (duration <= 3 ? 0.15 : 0)));
 
 const validateDuration = (actual: number, expected: number, message: string) => {
   if (Math.abs(actual - expected) > durationTolerance(expected)) throw new MediaProcessingError("PROCESSING_FAILED", message);

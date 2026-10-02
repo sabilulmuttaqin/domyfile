@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow } from "docx";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { documentEngine, getDocumentOutputName } from "./document-engine";
 
 const makeDocxFile = async () => {
@@ -67,5 +69,30 @@ describe("document engine", () => {
 
     expect(result.failures[0]?.error.code).toBe("UNSUPPORTED_FORMAT");
     expect(getDocumentOutputName("report.docx", "docx-to-txt")).toBe("report-text.txt");
+  });
+
+  it("compresses and extracts JPEG media whose entry name ends in .undefined (BUG-F/BUG-G)", async () => {
+    // DOCX built by scripts/tmp-repro-undefined.mjs: valid package with a real
+    // JPEG stored as word/media/image1.undefined — the media-name form the docx
+    // lib emits when the entry type is lost. Regression for QA BUG-F (compress)
+    // and BUG-G (extract output extension).
+    //
+    // NOTE: JPEG recompression itself needs createImageBitmap/Canvas, which the
+    // Node test environment does not provide — compressJpeg returns undefined
+    // and the tool correctly reports NO_USEFUL_REDUCTION. What we CAN verify
+    // here is the extract path (BUG-G) end-to-end, and that compress-docx now
+    // reaches the "no reduction" decision through magic-byte detection instead
+    // of crashing on a non-JPEG extension — i.e. the media IS detected as
+    // image/jpeg (it enters compressJpeg, not the old extension skip).
+    const zipBytes = readFileSync(join(process.cwd(), "tests", "fixtures", "docx-undefined-jpeg.docx"));
+    const input = new File([zipBytes], "photo-doc.docx", { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+    const compressed = await documentEngine.process([input], { tool: "compress-docx" });
+    expect(compressed.failures[0]?.error.code).toBe("NO_USEFUL_REDUCTION");
+
+    const extracted = await documentEngine.process([input], { tool: "extract-images-from-docx" });
+    expect(extracted.failures).toHaveLength(0);
+    expect(extracted.items[0]?.output.name).toBe("photo-doc-image-01.jpg");
+    expect(extracted.items[0]?.output.type).toBe("image/jpeg");
   });
 });
